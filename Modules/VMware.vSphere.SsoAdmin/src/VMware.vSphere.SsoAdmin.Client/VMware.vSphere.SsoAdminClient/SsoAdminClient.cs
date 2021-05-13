@@ -316,6 +316,46 @@ namespace VMware.vSphere.SsoAdminClient
          }
       }
 
+      public bool AddGroupToGroup(DataTypes.Group memberGroup, DataTypes.Group parentGroup) {
+         // Create Authorization Invocation Context
+         var authorizedInvocationContext =
+            CreateAuthorizedInvocationContext();
+
+         // Invoke SSO Admin AddGroupToLocalGroupAsync operation
+         return authorizedInvocationContext.
+            InvokeOperation(() =>
+               _ssoAdminBindingClient.AddGroupToLocalGroupAsync(
+                  new ManagedObjectReference {
+                     type = "SsoAdminPrincipalManagementService",
+                     Value = "principalManagementService"
+                  },
+                  new SsoPrincipalId {
+                     name = memberGroup.Name,
+                     domain = memberGroup.Domain
+                  },
+                  parentGroup.Name)).Result;
+      }
+
+      public bool RemoveGroupFromGroup(DataTypes.Group memberGroup, DataTypes.Group parentGroup) {
+         // Create Authorization Invocation Context
+         var authorizedInvocationContext =
+            CreateAuthorizedInvocationContext();
+
+         // Invoke SSO Admin RemoveFromLocalGroupAsync operation
+         return authorizedInvocationContext.
+            InvokeOperation(() =>
+               _ssoAdminBindingClient.RemoveFromLocalGroupAsync(
+                  new ManagedObjectReference {
+                     type = "SsoAdminPrincipalManagementService",
+                     Value = "principalManagementService"
+                  },
+                  new SsoPrincipalId {
+                     name = memberGroup.Name,
+                     domain = memberGroup.Domain
+                  },
+                  parentGroup.Name)).Result;
+      }
+
       public bool AddPersonUserToGroup(PersonUser user, DataTypes.Group group) {
          // Create Authorization Invocation Context
          var authorizedInvocationContext =

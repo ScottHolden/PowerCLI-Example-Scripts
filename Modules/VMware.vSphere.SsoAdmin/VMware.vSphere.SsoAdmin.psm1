@@ -841,6 +841,107 @@ function Get-SsoGroup {
       }
    }
 }
+
+function Set-SsoGroup {
+<#
+   .NOTES
+   ===========================================================================
+   Created on:   	5/13/2020
+   Created by:   	Scott Holden
+    Twitter:       @ScottDotMS
+    Github:        https://github.com/ScottHolden
+   ===========================================================================
+   .DESCRIPTION
+   Updates a group.
+
+   .PARAMETER Group
+   Specifies the Group instance to add or remove.
+
+   .PARAMETER ParentGroup
+   Specifies the Parent Group you want to add or remove Group from.
+
+   .PARAMETER Add
+   Specifies group will be added to the spcified parent group.
+
+   .PARAMETER Remove
+   Specifies group will be removed from the spcified parent group.
+
+   .EXAMPLE
+   Set-SsoGroup -Group $myExampleGroup -ParentGroup $myParentGroup -Add -Server $ssoAdminConnection
+
+   Adds $myExampleGroup to $myParentGroup
+
+   .EXAMPLE
+   Set-SsoGroup -Group $myExampleGroup -ParentGroup $myParentGroup -Remove -Server $ssoAdminConnection
+
+   Removes $myExampleGroup from $myParentGroup
+#>
+[CmdletBinding(ConfirmImpact='Medium')]
+ param(
+   [Parameter(
+      Mandatory=$true,
+      ValueFromPipeline=$true,
+      ValueFromPipelineByPropertyName=$false,
+      HelpMessage='Group instance you want to update')]
+   [VMware.vSphere.SsoAdminClient.DataTypes.Group]
+   $User,
+
+   [Parameter(
+      ParameterSetName = 'AddToGroup',
+      Mandatory=$true,
+      ValueFromPipeline=$false,
+      ValueFromPipelineByPropertyName=$false,
+      HelpMessage='Parent Group instance you want Group to be added to or removed from')]
+   [Parameter(
+      ParameterSetName = 'RemoveFromGroup',
+      Mandatory=$true,
+      ValueFromPipeline=$false,
+      ValueFromPipelineByPropertyName=$false,
+      HelpMessage='Parent Group instance you want Group to be added to or removed from')]
+   [ValidateNotNull()]
+   [VMware.vSphere.SsoAdminClient.DataTypes.Group]
+   $Group,
+
+   [Parameter(
+      ParameterSetName = 'AddToGroup',
+      Mandatory=$true)]
+   [switch]
+   $Add,
+
+   [Parameter(
+      ParameterSetName = 'RemoveFromGroup',
+      Mandatory=$true)]
+   [switch]
+   $Remove,
+
+   Process {
+      try {
+         foreach ($g in $Group) {
+            $ssoAdminClient = $g.GetClient()
+            if ((-not $ssoAdminClient)) {
+               Write-Error "Object '$g' is from disconnected server"
+               continue
+            }
+
+            if ($Add) {
+               $result = $ssoAdminClient.AddGroupToGroup($g, $Group)
+               if ($result) {
+                  Write-Output $g
+               }
+            }
+
+            if ($Remove) {
+               $result = $ssoAdminClient.RemoveGroupFromGroup($g, $Group)
+               if ($result) {
+                  Write-Output $g
+               }
+            }
+         }
+      } catch {
+         Write-Error (FormatError $_.Exception)
+      }
+   }
+}
 #endregion
 
 #region PasswordPolicy cmdlets
